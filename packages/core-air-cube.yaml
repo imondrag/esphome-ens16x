@@ -1,0 +1,145 @@
+external_components:
+  - source: github://imondrag/esphome-ens16x
+    components: [ ens160_i2c, ens160_base ]
+    refresh: 0s
+
+substitutions: 
+  pin_led_strip: GPIO25
+  pin_sda:       GPIO01
+  pin_scl:       GPIO00
+  pin_button:    GPIO11
+  #pin_internal_boot_button: GPIO09
+
+esphome:
+  name: "air-cube"
+  friendly_name: Air Cube
+  on_boot:
+    then:
+      - light.turn_on:
+          id: aqi_led
+          effect: "Pulse color"
+          brightness: !lambda return id(led_brightness).state;
+          red: 0%
+          green: 0%
+          blue: 100%
+
+esp32:
+  variant: esp32h2
+
+i2c:
+  sda: $pin_sda
+  scl: $pin_scl
+  frequency: 100kHz
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: aqi_led
+    pin: $pin_led_strip
+    num_leds: 3
+    rgb_order: GRB
+    chipset: ws2812
+    effects:
+      - pulse:
+          name: "Pulse color"
+          transition_length: 2s
+          update_interval: 2s
+          min_brightness: 0.5
+          max_brightness: 1.0
+
+binary_sensor:
+  - platform: gpio
+    id: button
+    pin: $pin_button
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - number.increment: led_brightness
+
+number:
+  - platform: template
+    id: led_brightness
+    name: "LED Brightness Level"
+    icon: "mdi:brightness-6"
+    optimistic: True
+    min_value: 0.0
+    max_value: 1.0
+    step: 0.25
+    initial_value: 0.5
+    restore_value: True
+    on_value:
+      then:
+        - light.turn_on:
+            id: aqi_led
+            brightness: !lambda return x;
+
+sensor:
+  - platform: ens210
+    update_interval: 1s
+    temperature:
+      name: "Temperature"
+      id: ens210_temperature
+      filters:
+        - exponential_moving_average
+    humidity:
+      name: "Humidity"
+      id: ens210_humidity
+      filters:
+        - exponential_moving_average
+
+  - platform: ens160_i2c
+    update_interval: 1s
+    compensation:
+      temperature: ens210_temperature
+      humidity: ens210_humidity
+    eco2:
+      name: "eCO2"
+      filters:
+        - skip_initial: 5
+        - exponential_moving_average
+    tvoc:
+      name: "Total Volatile Organic Compounds"
+      filters:
+        - skip_initial: 5
+        - exponential_moving_average
+    aqi_sciosense:
+      name: "Air Quality Index"
+      id: relative_aqi
+      filters:
+        - skip_initial: 5
+        - exponential_moving_average
+      on_raw_value: # raw value ensures LED updates every `update_interval`
+        then:
+          - component.update: led_hue
+
+  - platform: template
+    id: led_hue
+    update_interval: never
+    lambda: |-
+      const auto raqi = id(relative_aqi).get_raw_state();
+      if (std::isnan(raqi) || raqi <= 0.0f) {
+        // Can't update LED without a value
+        return {};
+      }
+
+      const auto clamped_aqi = clamp(raqi, 10.0f, 200.0f);
+      float ratio = (clamped_aqi - 10.0f) / 190.0f;
+      float hue = 120.0f - (ratio * 120.0f);
+      return hue;
+    on_value:
+      then:
+        - light.turn_on:
+            id: aqi_led
+            effect: None
+            brightness: !lambda return id(led_brightness).state;
+            red: !lambda |-
+              float r, g, b;
+              hsv_to_rgb(x, 1.0f, 1.0f, r, g, b);
+              return r;
+            green: !lambda |-
+              float r, g, b;
+              hsv_to_rgb(x, 1.0f, 1.0f, r, g, b);
+              return g;
+            blue: 0%
+

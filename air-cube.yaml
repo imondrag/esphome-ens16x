@@ -1,0 +1,22 @@
+packages:
+  air_cube: github://imondrag/esphome-ens16x/packages/core-air-cube.yaml
+
+esphome:
+  friendly_name: Air Cube
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: !secret api_key
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# Thread Setup
+network:
+  enable_ipv6: true
+openthread:
+  tlv: !secret thread_tlv
+

@@ -1,5 +1,5 @@
 external_components:
-  - source: github://imondrag/esphome-ens16x
+  - source: github://imondrag/esphome-air-cube
     components: [ ens160_i2c, ens160_base ]
     refresh: 0s
 

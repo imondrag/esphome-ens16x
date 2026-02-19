@@ -1,5 +1,5 @@
 packages:
-  air_cube: github://imondrag/esphome-ens16x/packages/core-air-cube.yaml
+  air_cube: github://imondrag/esphome-air-cube/packages/core-air-cube.yaml
 
 esphome:
   friendly_name: Air Cube

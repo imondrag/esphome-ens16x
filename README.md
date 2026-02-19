@@ -48,7 +48,11 @@ You'll need:
 You can use the guide linked below, but I didn't have any luck finding the TLV using the Home Assistant UI.
 HOWEVER, I found the TLV in the HA file system at `/config/.storage/thread.datasets`. 
 
-You can use the command line to print this information. It's probably easiest to use the CLI provided with the [VS Code add-on](https://github.com/hassio-addons/addon-vscode/blob/main/vscode/DOCS.md).
+> [!NOTE]
+> You may need to force a sync from the mobile app.
+> Go to Settings > Companion app > Troubleshooting > Sync Thread credentials 
+
+You can then use the command line to print the TLV. It's probably easiest to use the CLI provided with the [VS Code add-on](https://github.com/hassio-addons/addon-vscode/blob/main/vscode/DOCS.md).
 
 ```
 $ cat /config/.storage/thread.datasets 

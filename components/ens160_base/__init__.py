@@ -24,6 +24,7 @@ CODEOWNERS = ["@vincentscode", "@latonita"]
 ens160_ns = cg.esphome_ns.namespace("ens160_base")
 
 CONF_AQI = "aqi"
+CONF_AQI_S = "aqi_s"
 UNIT_INDEX = "index"
 
 CONFIG_SCHEMA_BASE = cv.Schema(
@@ -43,6 +44,12 @@ CONFIG_SCHEMA_BASE = cv.Schema(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(CONF_AQI): sensor.sensor_schema(
+            icon=ICON_CHEMICAL_WEAPON,
+            accuracy_decimals=0,
+            device_class=DEVICE_CLASS_AQI,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_AQI_S): sensor.sensor_schema(
             icon=ICON_CHEMICAL_WEAPON,
             accuracy_decimals=0,
             device_class=DEVICE_CLASS_AQI,
@@ -71,6 +78,9 @@ async def to_code_base(config):
     if aqi_config := config.get(CONF_AQI):
         sens = await sensor.new_sensor(aqi_config)
         cg.add(var.set_aqi(sens))
+    if aqi_s_config := config.get(CONF_AQI_S):
+        sens = await sensor.new_sensor(aqi_s_config)
+        cg.add(var.set_aqi_sciosense(sens))
 
     if compensation_config := config.get(CONF_COMPENSATION):
         sens = await cg.get_variable(compensation_config[CONF_TEMPERATURE])

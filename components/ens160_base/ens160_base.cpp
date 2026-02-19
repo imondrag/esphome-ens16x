@@ -1,6 +1,8 @@
 // ENS160 sensor with I2C interface from ScioSense
+// ENS161 is a drop in replacement for ENS160
 //
-// Datasheet: https://www.sciosense.com/wp-content/uploads/documents/SC-001224-DS-7-ENS160-Datasheet.pdf
+// ENS160 Datasheet: https://www.sciosense.com/wp-content/uploads/2023/12/ENS160-Datasheet.pdf
+// ENS161 Datasheet: https://www.sciosense.com/wp-content/uploads/2024/12/ENS161-Datasheet.pdf
 //
 // Implementation based on:
 //   https://github.com/sciosense/ENS160_driver
@@ -28,6 +30,8 @@ static const uint8_t ENS160_REG_DATA_STATUS = 0x20;
 static const uint8_t ENS160_REG_DATA_AQI = 0x21;
 static const uint8_t ENS160_REG_DATA_TVOC = 0x22;
 static const uint8_t ENS160_REG_DATA_ECO2 = 0x24;
+
+static const uint8_t ENS161_REG_DATA_AQI_S = 0x26;
 
 static const uint8_t ENS160_REG_GPR_READ_0 = 0x48;
 static const uint8_t ENS160_REG_GPR_READ_4 = ENS160_REG_GPR_READ_0 + 4;
@@ -225,6 +229,16 @@ void ENS160Component::update() {
     data_aqi = ENS160_DATA_AQI & data_aqi;
 
     this->aqi_->publish_state(data_aqi);
+  }
+
+  uint16_t data_aqi_sciosense;
+  if (!this->read_bytes(ENS161_REG_DATA_AQI_S, reinterpret_cast<uint8_t *>(&data_aqi_sciosense), 2)) {
+    ESP_LOGW(TAG, "Error reading AQI-S data register");
+    this->status_set_warning();
+    return;
+  }
+  if (this->aqi_sciosense_ != nullptr) {
+    this->aqi_sciosense_->publish_state(data_aqi_sciosense);
   }
 
   this->status_clear_warning();

@@ -11,7 +11,7 @@ class ENS160Component : public PollingComponent, public sensor::Sensor {
   void set_co2(sensor::Sensor *co2) { co2_ = co2; }
   void set_tvoc(sensor::Sensor *tvoc) { tvoc_ = tvoc; }
   void set_aqi(sensor::Sensor *aqi) { aqi_ = aqi; }
-  void set_aqi_sciosense(sensor::Sensor *aqi_s) { aqi_s_ = aqi_s; }
+  void set_aqi_sciosense(sensor::Sensor *aqi_s) { aqi_sciosense_ = aqi_s; }
 
   void set_humidity(sensor::Sensor *humidity) { humidity_ = humidity; }
   void set_temperature(sensor::Sensor *temperature) { temperature_ = temperature; }

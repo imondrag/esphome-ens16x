@@ -24,7 +24,7 @@ CODEOWNERS = ["@vincentscode", "@latonita"]
 ens160_ns = cg.esphome_ns.namespace("ens160_base")
 
 CONF_AQI = "aqi"
-CONF_AQI_S = "aqi_s"
+CONF_AQI_S = "aqi_sciosense"
 UNIT_INDEX = "index"
 
 CONFIG_SCHEMA_BASE = cv.Schema(
